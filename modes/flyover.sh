@@ -1,13 +1,13 @@
 # FLYOVER MODE ######################################################################################################
-if [ "$MODE" = "flyover" ]; then
-  if [ -z "$FILE" ]; then
+if [[ "$MODE" = "flyover" ]]; then
+  if [[ -z "$FILE" ]]; then
     logo
     echo "You need to specify a list of targets (ie. -f <targets.txt>) to scan."
     exit
   fi
 
-  if [ "$REPORT" = "1" ]; then
-    if [ ! -z "$WORKSPACE" ]; then
+  if [[ "$REPORT" = "1" ]]; then
+    if [[ ! -z "$WORKSPACE" ]]; then
       args="$args -w $WORKSPACE"
       WORKSPACE_DIR=$INSTALL_DIR/loot/workspace/$WORKSPACE
       echo -e "$OKBLUE[*]$RESET Saving loot to $LOOT_DIR [$RESET${OKGREEN}OK${RESET}$OKBLUE]$RESET"
@@ -37,11 +37,12 @@ if [ "$MODE" = "flyover" ]; then
     echo -e "$RESET"
     echo "sniper -f $FILE -m $MODE --noreport $args" >> $LOOT_DIR/scans/$WORKSPACE-$MODE.txt
     sniper $args | tee $WORKSPACE_DIR/output/sniper-$WORKSPACE-$MODE-`date +"%Y%m%d%H%M"`.txt 2>&1
-    if [ "$SLACK_NOTIFICATIONS" == "1" ]; then
+    if [[ "$SLACK_NOTIFICATIONS" == "1" ]]; then
       /bin/bash "$INSTALL_DIR/bin/slack.sh" "[xerosecurity.com] •?((¯°·._.• Started Sn1per scan: $FILE [$MODE] (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•"
+      echo "[xerosecurity.com] •?((¯°·._.• Started Sn1per scan: $FILE [$MODE] (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•" >> $LOOT_DIR/scans/notifications.txt
     fi
     args=""
-    
+    cp $LOOT_DIR/nmap/livehosts-sorted.txt $LOOT_DIR/nmap/livehosts-sorted.old 2> /dev/null
     i=1
     for HOST in `cat $FILE`; do
       TARGET="$HOST"
@@ -53,25 +54,28 @@ if [ "$MODE" = "flyover" ]; then
 
       dig all +short $TARGET 2> /dev/null > $LOOT_DIR/nmap/dns-$TARGET.txt 2> /dev/null & 
       dig all +short -x $TARGET 2> /dev/null >> $LOOT_DIR/nmap/dns-$TARGET.txt 2> /dev/null & 
+      sed -i -E 's/,//g' $LOOT_DIR/ips/ips-all-sorted.txt 2> /dev/null
       host $TARGET 2> /dev/null | grep address 2> /dev/null | awk '{print $4}' 2> /dev/null >> $LOOT_DIR/ips/ips-all-unsorted.txt 2> /dev/null &
 
       wget -qO- -T 1 --connect-timeout=5 --read-timeout=5 --tries=1 http://$TARGET |  perl -l -0777 -ne 'print $1 if /<title.*?>\s*(.*?)\s*<\/title/si' 2> /dev/null > $LOOT_DIR/web/title-https-$TARGET.txt & 2> /dev/null
       wget -qO- -T 1 --connect-timeout=5 --read-timeout=5 --tries=1 https://$TARGET |  perl -l -0777 -ne 'print $1 if /<title.*?>\s*(.*?)\s*<\/title/si' 2> /dev/null > $LOOT_DIR/web/title-https-$TARGET.txt & 2> /dev/null
 
-      curl --connect-timeout 5 -I -s -R http://$TARGET 2> /dev/null > $LOOT_DIR/web/headers-http-$TARGET.txt 2> /dev/null & 
-      curl --connect-timeout 5 -I -s -R https://$TARGET 2> /dev/null > $LOOT_DIR/web/headers-https-$TARGET.txt 2> /dev/null &
+      curl --connect-timeout 5 -I -s -R --insecure http://$TARGET 2> /dev/null > $LOOT_DIR/web/headers-http-$TARGET.txt 2> /dev/null & 
+      curl --connect-timeout 5 -I -s -R --insecure https://$TARGET 2> /dev/null > $LOOT_DIR/web/headers-https-$TARGET.txt 2> /dev/null &
 
       webtech -u http://$TARGET 2> /dev/null | grep \- 2> /dev/null | cut -d- -f2- 2> /dev/null > $LOOT_DIR/web/webtech-$TARGET-http.txt 2> /dev/null &
       webtech -u https://$TARGET 2> /dev/null | grep \- 2> /dev/null | cut -d- -f2- 2> /dev/null > $LOOT_DIR/web/webtech-$TARGET-https.txt 2> /dev/null &
 
-      nmap -sS --open -Pn -p $DEFAULT_PORTS $TARGET -oX $LOOT_DIR/nmap/nmap-$TARGET.xml 2> /dev/null > $LOOT_DIR/nmap/nmap-$TARGET.txt 2> /dev/null & 
+      mv -f $LOOT_DIR/nmap/ports-$TARGET.txt $LOOT_DIR/nmap/ports-$TARGET.old 2> /dev/null
+      nmap -sS -p $QUICK_PORTS $TARGET -oX $LOOT_DIR/nmap/nmap-$TARGET.xml 2> /dev/null > $LOOT_DIR/nmap/nmap-$TARGET.txt 2> /dev/null & 
+
       WEBHOST=$(cat $LOOT_DIR/nmap/nmap-$TARGET.txt 2> /dev/null | egrep "80|443" | grep open | wc -l 2> /dev/null) 
-      if [ "$WEBHOST" -gt "0" ]; then
+      if [[ "$WEBHOST" -gt "0" ]]; then
         echo "$TARGET" >> $LOOT_DIR/web/webhosts-unsorted.txt 2> /dev/null
       fi
-      cat $LOOT_DIR/nmap/dns-$TARGET.txt 2> /dev/null | egrep -i "wordpress|instapage|heroku|github|bitbucket|squarespace|fastly|feed|fresh|ghost|helpscout|helpjuice|instapage|pingdom|surveygizmo|teamwork|tictail|shopify|desk|teamwork|unbounce|helpjuice|helpscout|pingdom|tictail|campaign|monitor|cargocollective|statuspage|tumblr|amazon|hubspot|cloudfront|modulus|unbounce|uservoice|wpengine|cloudapp" 2>/dev/null | tee $LOOT_DIR/nmap/takeovers-$TARGET.txt 2>/dev/null & 2> /dev/null
-      if [ $CUTYCAPT = "1" ]; then
-        if [ ${DISTRO} == "blackarch"  ]; then
+      cat $LOOT_DIR/nmap/dns-$TARGET.txt 2> /dev/null | egrep -i "anima|bitly|wordpress|instapage|heroku|github|bitbucket|squarespace|fastly|feed|fresh|ghost|helpscout|helpjuice|instapage|pingdom|surveygizmo|teamwork|tictail|shopify|desk|teamwork|unbounce|helpjuice|helpscout|pingdom|tictail|campaign|monitor|cargocollective|statuspage|tumblr|amazon|hubspot|cloudfront|modulus|unbounce|uservoice|wpengine|cloudapp" 2>/dev/null | tee $LOOT_DIR/nmap/takeovers-$TARGET.txt 2>/dev/null & 2> /dev/null
+      if [[ $CUTYCAPT = "1" ]]; then
+        if [[ $DISTRO == "blackarch"  ]]; then
           /bin/CutyCapt --url=http://$TARGET:80 --out=$LOOT_DIR/screenshots/$TARGET-port80.jpg --insecure --max-wait=5000 2> /dev/null &
           /bin/CutyCapt --url=https://$TARGET:443 --out=$LOOT_DIR/screenshots/$TARGET-port443.jpg --insecure --max-wait=5000 2> /dev/null &
         else
@@ -79,7 +83,7 @@ if [ "$MODE" = "flyover" ]; then
           cutycapt --url=https://$TARGET:443 --out=$LOOT_DIR/screenshots/$TARGET-port443.jpg --insecure --max-wait=5000 2> /dev/null > /dev/null &
         fi
       fi
-      if [ $WEBSCREENSHOT = "1" ]; then
+      if [[ $WEBSCREENSHOT = "1" ]]; then
         cd $LOOT_DIR
         python2 $INSTALL_DIR/bin/webscreenshot.py -r chromium http://$TARGET:80 2> /dev/null > /dev/null &
         python2 $INSTALL_DIR/bin/webscreenshot.py -r chromium https://$TARGET:443 2> /dev/null > /dev/null &
@@ -87,34 +91,58 @@ if [ "$MODE" = "flyover" ]; then
       echo "$TARGET" >> $LOOT_DIR/scans/updated.txt
       echo "$TARGET" >> $LOOT_DIR/domains/targets-all-presorted.txt
       i=$((i+1))
-      if [ "$i" -gt "$THREADS" ]; then
+      if [[ "$i" -gt "$FLYOVER_MAX_HOSTS" ]]; then
         i=1
-        sleep 15
+        sleep $FLYOVER_DELAY
       fi
     done
-    sleep 15
+    sleep $FLYOVER_DELAY
     sort -u LOOT_DIR/ips/ips-all-unsorted.txt 2> /dev/null > $LOOT_DIR/ips/ips-all-sorted.txt 2> /dev/null
     sort -u $LOOT_DIR/domains/targets-all-presorted.txt 2> /dev/null > $LOOT_DIR/domains/targets-all-sorted.txt
     rm -f $INSTALL_DIR/wget-log* 2> /dev/null
     killall webtech 2> /dev/null
+    rm -f $LOOT_DIR/nmap/livehosts-unsorted.txt 2> /dev/null
     for TARGET in `cat $LOOT_DIR/domains/targets-all-sorted.txt`; do
-      HOST_UP=$(cat $LOOT_DIR/nmap/nmap-$TARGET.txt $LOOT_DIR/nmap/nmap-$TARGET-*.txt 2> /dev/null | grep "host up" 2> /dev/null)
-      if [ ${#HOST_UP} -ge 2 ]; then
+      HOST_UP=$(cat $LOOT_DIR/nmap/nmap-$TARGET.txt 2> /dev/null | grep "host up" 2> /dev/null)
+      if [[ ${#HOST_UP} -ge 2 ]]; then
         echo "$TARGET" >> $LOOT_DIR/nmap/livehosts-unsorted.txt 2> /dev/null
       fi
-
-      rm -f $LOOT_DIR/nmap/ports-$TARGET.txt 2> /dev/null
       for PORT in `cat $LOOT_DIR/nmap/nmap-$TARGET.xml $LOOT_DIR/nmap/nmap-$TARGET-*.xml 2>/dev/null | egrep 'state="open"' | cut -d' ' -f3 | cut -d\" -f2 | sort -u | grep '[[:digit:]]'`; do
-        echo "$PORT " >> $LOOT_DIR/nmap/ports-$TARGET.txt
-      done      
+        echo "$PORT " >> $LOOT_DIR/nmap/ports-$TARGET.txt 
+      done
+
+      cat $LOOT_DIR/nmap/nmap-$TARGET.txt $LOOT_DIR/nmap/nmap-$TARGET-*.txt 2>/dev/null | egrep "MAC Address:" | awk '{print $3 " " $4 " " $5 " " $6}' > $LOOT_DIR/nmap/macaddress-$TARGET.txt 2> /dev/null
+      cat $LOOT_DIR/nmap/nmap-$TARGET.txt $LOOT_DIR/nmap/nmap-$TARGET-*.txt $LOOT_DIR/output/nmap-$TARGET-*.txt 2>/dev/null | egrep "OS details:|OS guesses:" | cut -d\: -f2 | sed 's/,//g' | head -c50 - > $LOOT_DIR/nmap/osfingerprint-$TARGET.txt 2> /dev/null
+      diff $LOOT_DIR/nmap/ports-$TARGET.old $LOOT_DIR/nmap/ports-$TARGET.txt 2> /dev/null > $LOOT_DIR/nmap/ports-$TARGET.diff 2> /dev/null
     done
     sort -u $LOOT_DIR/nmap/livehosts-unsorted.txt 2> /dev/null > $LOOT_DIR/nmap/livehosts-sorted.txt 2> /dev/null
+    diff $LOOT_DIR/nmap/livehosts-sorted.old $LOOT_DIR/nmap/livehosts-sorted.txt 2> /dev/null > $LOOT_DIR/nmap/livehosts-sorted.diff 2> /dev/null
+
+    if [[ "$SLACK_NOTIFICATIONS_NMAP_DIFF" == "1" ]] && [[ -s "$LOOT_DIR/nmap/livehosts-sorted.diff" ]]; then
+      /bin/bash "$INSTALL_DIR/bin/slack.sh" "[xerosecurity.com] •?((¯°·._.• Host status change detected on $TARGET (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•"
+      /bin/bash "$INSTALL_DIR/bin/slack.sh" postfile "$LOOT_DIR/nmap/livehosts-sorted.diff"
+      echo "[xerosecurity.com] •?((¯°·._.• Host status change detected on $TARGET (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•" >> $LOOT_DIR/scans/notifications.txt
+      cat $LOOT_DIR/nmap/livehosts-sorted.diff | egrep "<|>" >> $LOOT_DIR/scans/notifications.txt
+    fi
+
+    for a in `cat $LOOT_DIR/domains/targets-all-sorted.txt 2> /dev/null`
+    do
+      diff $LOOT_DIR/nmap/ports-$a.old $LOOT_DIR/nmap/ports-$a.txt 2> /dev/null > $LOOT_DIR/nmap/ports-$a.diff 2> /dev/null
+
+      if [[ "$SLACK_NOTIFICATIONS_NMAP_DIFF" == "1" ]] && [[ -s "$LOOT_DIR/nmap/ports-$a.diff" ]]; then
+        /bin/bash "$INSTALL_DIR/bin/slack.sh" "[xerosecurity.com] •?((¯°·._.• Port change detected on $a (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•"
+        /bin/bash "$INSTALL_DIR/bin/slack.sh" postfile "$LOOT_DIR/nmap/ports-$a.diff"
+        echo "[xerosecurity.com] •?((¯°·._.• Port change detected on $a (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•" >> $LOOT_DIR/scans/notifications.txt
+        cat $LOOT_DIR/nmap/ports-$a.diff | egrep "<|>" >> $LOOT_DIR/scans/notifications.txt
+      fi
+    done
     echo -e "$OKRED=====================================================================================$RESET"
-    if [ "$LOOT" = "1" ]; then
+    if [[ "$LOOT" = "1" ]]; then
       loot
     fi
-    if [ "$SLACK_NOTIFICATIONS" == "1" ]; then
+    if [[ "$SLACK_NOTIFICATIONS" == "1" ]]; then
       /bin/bash "$INSTALL_DIR/bin/slack.sh" "[xerosecurity.com] •?((¯°·._.• Finished Sn1per scan: $FILE [$MODE] (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•"
+      echo "[xerosecurity.com] •?((¯°·._.• Finished Sn1per scan: $FILE [$MODE] (`date +"%Y-%m-%d %H:%M"`) •._.·°¯))؟•" >> $LOOT_DIR/scans/notifications.txt
     fi
   fi
   exit

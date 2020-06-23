@@ -1,4 +1,73 @@
 ## CHANGELOG:
+* v8.5 - Fixed Dockerfile with updated Kali image (CC. @stevemcilwain)
+* v8.4 - Added project "Sc0pe" active/passive vulnerability scanner
+* v8.4 - Added 68 new active sc0pe templates
+* v8.4 - Added 14 new passive sc0pe templates
+* v8.4 - Added OWASP ZAP API integration
+* v8.4 - Added 8 new Sn1per configuration templates (see /usr/share/sniper/conf/)
+* v8.4 - Added Gau (https://github.com/lc/gau)
+* v8.4 - Added rapiddns subdomain retrieval
+* v8.4 - Updated web content wordlists
+* v8.4 - Improved efficiency of 'web' and 'recon' mode scans
+* v8.4 - Disabled legacy Metasploit web exploits (check Sn1per conf to re-enable)
+* v8.4 - Fixed issue with dirsearch asterisk being used incorrectly
+* v8.4 - Fixed issue with airstrike mode not updated Sn1per Professional v8.0 host list
+* v8.4 - Fixed issue with webtech re.error: invalid group reference 1 at position 130
+* v8.3 - Added Github subdomain retrieval (requires API key/conf options enabled)
+* v8.3 - Added NMAP_OPTIONS setting to sniper.conf to configure optional NMap scan settings
+* v8.3 - Added option to specify custom Sn1per configuration via (-c) switch
+* v8.3 - Created several custom config files to select from, including: bug_bounty_quick, bug_bounty_max_javascript, super_stealth_mode, webpwn_only + more
+* v8.3 - Added workspace --export option to backup/export a workspace
+* v8.3 - Added flyover mode tuning options to sniper.conf
+* v8.3 - Added GitGraber automated Github leak search (https://github.com/hisxo/gitGraber)
+* v8.3 - Added static Javascript parsing for sub-domains, URL's, path relative links and comments
+* v8.3 - Added js-beautifier
+* v8.3 - Added LinkFinder Javascript link finder (https://github.com/GerbenJavado/LinkFinder)
+* v8.3 - Added fprobe HTTP probe checker (https://github.com/theblackturtle/fprobe)
+* v8.3 - Added Cisco RV320 and RV325 Unauthenticated Remote Code Execution CVE-2019-1653 MSF exploit
+* v8.3 - Improved performance of 'stealth' and 'recon' modes
+* v8.3 - Updated default port lists
+* v8.3 - Improved performance of all port scans
+* v8.3 - Added fix for missing Amass package
+* v8.3 - Added sniper.conf options for OPENVAS_HOST and OPENVAS_PORT selection for remote instances
+* v8.3 - Improved 'vulnscan' mode via OpenVAS to scan the same asset multiple times with improved error handling
+* v8.2 - Added root priv check to sniper script to run
+* v8.2 - Added NMap port change notifications via Slack
+* v8.2 - Fixed issue with firefox not loading on Kali Linux 2020.1 
+* v8.2 - Fixed issue with Masswebscan mode not working
+* v8.2 - Added Rails file exposure exploit CVE-2019-5418
+* v8.2 - Updated wordlist selections to fingerprint common vulnerable applications
+* v8.2 - Added h8mail compromised credentials check to OSINT (-o) mode
+* v8.2 - Added Kali start menu app & icon for Sn1per
+* v8.2 - Added check for insecure SSL/TLS connections
+* v8.2 - Added NMAP_OPTIONS setting in ~/.sniper.conf to configure optional NMap settings
+* v8.2 - Fixed issue with ManageEngine MSF exploit payload
+* v8.2 - Added Spyse sub-domain enumeration tool (https://github.com/zeropwn/spyse.py)
+* v8.2 - Fixed issue with Subjack (open /src/github.com/haccer/subjack/fingerprints.json: no such file or directory)
+* v8.1 - Added Citrix Gateway Arbitary Code Execution CVE-2019-19781 vulnerability detection
+* v8.1 - Added Pulse Secure VPN Arbitrary File Disclosure CVE-2019-11510 exploit
+* v8.1 - Added --data-length=50 for NMap IPS evasion
+* v8.1 - Removed NMap vulscan script due to F+ results
+* v8.1 - Fixed issue with CRT.SH sub-domain retrieval
+* v8.1 - Updated Kali Linux keyring package
+* v8.1 - Fixed "[: ==: unary operator expected" in all code
+* v8.1 - Updated Sn1per Professional autoload settings
+* v8.1 - Updated web brute force wordlists
+* v8.1 - Removed null and debug errors from passive spider API output
+* v8.1 - Updated Commoncrawl index repo
+* v8.1 - Updated DockerFile repository
+* v8.1 - Fixed issue with -dh flag to delete host with Sn1per Pro v8.0
+* v8.1 - Fixed issue with subfinder missing
+* v8.1 - Fixed issue with 7zip missing
+* v8.1 - Added check for Ubuntu to install.sh automatically
+* v8.0 - Added ASnip tool to retrieve ASN's via 'recon' mode
+* v8.0 - Added Shodan sub-domain lookup
+* v8.0 - Added script timeout flag for NMap scripts
+* v8.0 - Fixed issue with dnsenum getting stuck on gathering dns info stage
+* v8.0 - Added option to force upgrade/install.sh without user prompt (ie. ./install.sh force)
+* v8.0 - Fixed issue with theHarvester package on Ubuntu systems
+* v8.0 - Fixed error "[: ==: unary operator expected" in all modes
+* v8.0 - Added net-tools package for Ubuntu OS deps
 * v7.4 - Added LDAP anomyous search to port 389/tcp checks (Shoutout @D0rkerDevil)
 * v7.4 - Added Java RMI dump registry scan checks and exploits to port 8001/tcp (Shoutout @D0rkerDevil)
 * v7.4 - Added CheckPoint Firewall-1 SecuRemote Topology Service Hostname Disclosure MSF module
@@ -50,7 +119,7 @@
 * v7.2 - Fixed issue with Censys API being enabled by default
 * v7.2 - Fixed verbose errors in subjack/subover tools
 * v7.2 - Fixed issue with NMap http scripts not working
-* v7.1 - Added KeepBlue CVE-2019-0708 MSF scanner
+* v7.1 - Added BlueKeep CVE-2019-0708 MSF scanner
 * v7.1 - Added automatic workspace generation for single target scans
 * v7.1 - Added new slack.sh API integration script
 * v7.1 - Added differential Slack notifications for new domains, new URL's and various scan outputs

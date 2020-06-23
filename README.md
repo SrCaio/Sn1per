@@ -62,25 +62,26 @@ To obtain a Sn1per Professional license, go to https://xerosecurity.com.
 - [x] Hunter.io API integration (https://github.com/1N3/Sn1per/wiki/Hunter.io-API-Integration)
 - [x] OpenVAS API integration (https://github.com/1N3/Sn1per/wiki/OpenVAS-Integration)
 - [x] Burpsuite Professional 2.x integration (https://github.com/1N3/Sn1per/wiki/Burpsuite-Professional-2.x-Integration)
+- [x] Shodan API integration (https://github.com/1N3/Sn1per/wiki/Shodan-Integration)
 - [x] Censys API integration (https://github.com/1N3/Sn1per/wiki/Censys-API-Integration)
 - [x] Metasploit integration (https://github.com/1N3/Sn1per/wiki/Metasploit-Integration)
 
-## KALI LINUX INSTALL:
+## KALI/UBUNTU/DEBIAN/PARROT LINUX INSTALL:
 ```
 bash install.sh
-```
-
-## UBUNTU/DEBIAN/PARROT INSTALL:
-```
-sudo bash install_debian_ubuntu.sh
 ```
 
 ## DOCKER INSTALL:
 From a new Docker console, run the following commands.
 ```
 Download https://raw.githubusercontent.com/1N3/Sn1per/master/Dockerfile
-docker build -t sn1per-docker . 
-docker run -it sn1per-docker /bin/bash
+docker build -t sn1per . 
+docker run -it sn1per /bin/bash
+
+or 
+
+docker pull xerosecurity/sn1per
+docker run -it xerosecurity/sn1per /bin/bash
 ```
 
 ## USAGE:
@@ -160,8 +161,14 @@ sniper -w <WORKSPACE_ALIAS> --reimportall
 [*] LOOT REIMPORT FUNCTION
 sniper -w <WORKSPACE_ALIAS> --reload
 
+[*] LOOT EXPORT FUNCTION
+sniper -w <WORKSPACE_ALIAS> --export
+
 [*] SCHEDULED SCANS
 sniper -w <WORKSPACE_ALIAS> -s daily|weekly|monthly
+
+[*] USE A CUSTOM CONFIG
+sniper -c /path/to/sniper.conf -t <TARGET> -w <WORKSPACE_ALIAS>
 
 [*] UPDATE SNIPER
 sniper -u|--update
@@ -172,33 +179,39 @@ sniper -u|--update
 * **STEALTH:** Quickly enumerate single targets using mostly non-intrusive scans to avoid WAF/IPS blocking.
 * **FLYOVER:** Fast multi-threaded high level scans of multiple targets (useful for collecting high level data on many hosts quickly).
 * **AIRSTRIKE:** Quickly enumerates open ports/services on multiple hosts and performs basic fingerprinting. To use, specify the full location of the file which contains all hosts, IPs that need to be scanned and run ./sn1per /full/path/to/targets.txt airstrike to begin scanning.
-* **NUKE:** Launch full audit of multiple hosts specified in text file of choice. Usage example: ./sniper /pentest/loot/targets.txt nuke. 
+* **NUKE:** Launch full audit of multiple hosts specified in text file of choice. Usage example: ./sniper /pentest/loot/targets.txt nuke.
 * **DISCOVER:** Parses all hosts on a subnet/CIDR (ie. 192.168.0.0/16) and initiates a sniper scan against each host. Useful for internal network scans.
 * **PORT:** Scans a specific port for vulnerabilities. Reporting is not currently available in this mode.
 * **FULLPORTONLY:** Performs a full detailed port scan and saves results to XML.
-* **MASSPORTSCAN:** Runs a "fullportonly" scan on mutiple targets specifified via the "-f" switch.
+* **MASSPORTSCAN:** Runs a "fullportonly" scan on mutiple targets specified via the "-f" switch.
 * **WEB:** Adds full automatic web application scans to the results (port 80/tcp & 443/tcp only). Ideal for web applications but may increase scan time significantly.
-* **MASSWEB:** Runs "web" mode scans on mutiple targets specifified via the "-f" switch.
+* **MASSWEB:** Runs "web" mode scans on multiple targets specified via the "-f" switch.
 * **WEBPORTHTTP:** Launches a full HTTP web application scan against a specific host and port.
 * **WEBPORTHTTPS:** Launches a full HTTPS web application scan against a specific host and port.
 * **WEBSCAN:** Launches a full HTTP & HTTPS web application scan against via Burpsuite and Arachni.
 * **MASSWEBSCAN:** Runs "webscan" mode scans of multiple targets specified via the "-f" switch.
 * **VULNSCAN:** Launches a OpenVAS vulnerability scan.
-* **MASSVULNSCAN:** Launches a "vulnscan" mode scans on mutiple targets specifified via the "-f" switch.
+* **MASSVULNSCAN:** Launches a "vulnscan" mode scans on multiple targets specified via the "-f" switch.
 
 ## SAMPLE REPORT:
 https://gist.github.com/1N3/8214ec2da2c91691bcbc
 
-## Help Topics
+### Help Topics
 
+- [x] Github API integration (https://github.com/1N3/Sn1per/wiki/Github-API-Integration)
 - [x] Burpsuite Professional 2.x integration (https://github.com/1N3/Sn1per/wiki/Burpsuite-Professional-2.x-Integration)
+- [x] OWASP ZAP integration (https://github.com/1N3/Sn1per/wiki/OWASP-ZAP-Integration)
+- [x] Shodan API integration (https://github.com/1N3/Sn1per/wiki/Shodan-Integration)
 - [x] Censys API integration (https://github.com/1N3/Sn1per/wiki/Censys-API-Integration)
 - [x] Hunter.io API integration (https://github.com/1N3/Sn1per/wiki/Hunter.io-API-Integration)
 - [x] Metasploit integration (https://github.com/1N3/Sn1per/wiki/Metasploit-Integration)
 - [x] OpenVAS API integration (https://github.com/1N3/Sn1per/wiki/OpenVAS-Integration)
 - [x] Scheduled scans (https://github.com/1N3/Sn1per/wiki/Scheduled-Scans)
+- [x] Sc0pe Templates (https://github.com/1N3/Sn1per/wiki/Sc0pe-Templates)
 - [x] Slack API integration (https://github.com/1N3/Sn1per/wiki/Slack-API-Integration)
 - [x] Sn1per Configuration Options (https://github.com/1N3/Sn1per/wiki/Sn1per-Configuration-Options)
+- [x] Sn1per Configuration Templates (https://github.com/1N3/Sn1per/wiki/Sn1per-Configuration-Options)
+- [x] Plugins & Tools (https://github.com/1N3/Sn1per/wiki/Plugins-&-Tools)
 
 ## LICENSE:
 This software is free to distribute and use with the condition that credit is provided to the creator (@xer0dayz @XeroSecurity), is not renamed and is not for commercial use or resold and rebranded. Permission to distribute any part of the code for sale is strictly prohibited.
